@@ -1,11 +1,20 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+echo "==> formatting..."
 go fmt ./...
-echo "refactored will now build"
 
+echo "==> Verifying dependencies..."
+go mod verify
 
-go build ./...
-echo "build will now test"
+echo "==> Running go vet..."
+go vet ./...
 
-go test ./...
-echo "tested will now run"
+echo "==> Running tests..."
+go test -race -cover ./...
 
-go run ./cmd/shrinkr
+echo "==> Building Shrinkr..."
+go build -v ./...
+
+echo "==> All checks passed!"
