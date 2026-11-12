@@ -1,0 +1,195 @@
+{{define "dashboard"}}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Shrinkr · Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/htmx.min.js" defer></script>
+    <script defer src="/static/js/app.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">
+                <span class="brand-mark">S</span>
+                <span>Shrinkr</span>
+            </a>
+            <div class="sidebar-label">WORKSPACE</div>
+            <a class="nav-link active" href="/">
+                <span class="nav-icon">▦</span>
+                Dashboard
+            </a>
+            <div class="sidebar-footer">
+                <span class="status-dot"></span>
+                Service operational
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <div class="eyebrow">WORKSPACE / OVERVIEW</div>
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="topbar-right">
+                    <span class="service-pill"><span class="status-dot"></span> All systems normal</span>
+                </div>
+            </header>
+
+            <section class="welcome-row">
+                <div>
+                    <h2>Your links, at a glance.</h2>
+                    <p>Create, manage and keep track of your shortened URLs.</p>
+                </div>
+            </section>
+
+            <section class="stats-grid" aria-label="Link statistics">
+                <article class="stat-card">
+                    <div class="stat-label">TOTAL LINKS</div>
+                    <div class="stat-value">{{.TotalLinks}}</div>
+                    <div class="stat-caption">Links created</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-label">ACTIVE LINKS</div>
+                    <div class="stat-value">{{.ActiveLinks}}</div>
+                    <div class="stat-caption">Currently available</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-label">TOTAL CLICKS</div>
+                    <div class="stat-value">{{.TotalClicks}}</div>
+                    <div class="stat-caption">Across all links</div>
+                </article>
+            </section>
+
+            <section class="panel create-panel">
+                <div class="panel-heading">
+                    <div>
+                        <div class="eyebrow">GET STARTED</div>
+                        <h2>Create a short link</h2>
+                        <p>Paste a long URL and Shrinkr will make it easier to share.</p>
+                    </div>
+                    <span class="panel-symbol">↗</span>
+                </div>
+
+                <form class="create-form"
+                      hx-post="/ui/links"
+                      hx-target="#form-message"
+                      hx-swap="innerHTML">
+                    <label for="target_url">Destination URL</label>
+                    <div class="input-row">
+                        <input id="target_url" name="target_url" type="url"
+                               placeholder="https://example.com/a/very/long/url"
+                               autocomplete="url" required>
+                        <button class="button button-primary" type="submit">
+                            Create link <span aria-hidden="true">↗</span>
+                        </button>
+                    </div>
+                    <div class="form-bottom">
+                        <div class="expiration-field">
+                            <label for="expires_at">Expiration <span>(optional)</span></label>
+                            <input id="expires_at" name="expires_at" type="datetime-local">
+                        </div>
+                        <div id="form-message" class="form-message" role="status" aria-live="polite"></div>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel links-panel">
+                <div class="panel-heading links-heading">
+                    <div>
+                        <div class="eyebrow">YOUR WORKSPACE</div>
+                        <h2>Your links</h2>
+                        <p>Manage your shortened URLs and track their activity.</p>
+                    </div>
+                    <span class="count-pill">{{.TotalLinks}} total</span>
+                </div>
+
+                <div id="link-list"
+                     hx-get="/ui/links"
+                     hx-trigger="load, linksChanged from:body"
+                     hx-swap="innerHTML">
+                    <div class="loading-state">Loading links…</div>
+                </div>
+            </section>
+
+            <footer class="page-footer">Shrinkr · Simple links, neatly managed.</footer>
+        </main>
+    </div>
+</body>
+</html>
+{{end}}
+
+{{define "links"}}
+{{if .Links}}
+<div class="table-wrap">
+    <table class="links-table">
+        <thead>
+            <tr>
+                <th>SHORT LINK</th>
+                <th>DESTINATION</th>
+                <th>CLICKS</th>
+                <th>STATUS</th>
+                <th class="actions-heading">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Links}}
+            <tr>
+                <td>
+                    <div class="short-link-cell">
+                        <a class="short-link" href="{{$.BaseURL}}/{{.Code}}" target="_blank" rel="noopener noreferrer">{{$.BaseURL}}/{{.Code}}</a>
+                        <button class="icon-button copy-button" type="button"
+                                data-copy="{{$.BaseURL}}/{{.Code}}" aria-label="Copy shortened URL"
+                                title="Copy shortened URL">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="8" y="8" width="12" height="12" rx="2"></rect>
+                                <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <a class="destination-link" href="{{.TargetURL}}" target="_blank" rel="noopener noreferrer" title="{{.TargetURL}}">{{.TargetURL}}</a>
+                </td>
+                <td><span class="click-count">{{.Clicks}}</span></td>
+                <td>
+                    {{if .Active}}
+                    <span class="status-badge status-active"><span></span> Active</span>
+                    {{else}}
+                    <span class="status-badge status-inactive"><span></span> Inactive</span>
+                    {{end}}
+                </td>
+                <td>
+                    <div class="row-actions">
+                        <form hx-post="/ui/links/{{.ID}}/active"
+                              hx-target="#link-list" hx-swap="innerHTML">
+                            <input type="hidden" name="active" value="{{if .Active}}false{{else}}true{{end}}">
+                            <button class="text-button" type="submit">{{if .Active}}Disable{{else}}Enable{{end}}</button>
+                        </form>
+                        <form hx-post="/ui/links/{{.ID}}/delete"
+                              hx-target="#link-list" hx-swap="innerHTML"
+                              hx-confirm="Delete this shortened link? This cannot be undone.">
+                            <button class="text-button danger-button" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{else}}
+<div class="empty-state">
+    <div class="empty-icon">↗</div>
+    <h3>No links yet</h3>
+    <p>Create your first short link using the form above.</p>
+</div>
+{{end}}
+{{end}}
+
+{{define "form-message"}}
+<div class="message {{if .Error}}message-error{{else}}message-success{{end}}">{{.Text}}</div>
+{{end}}

@@ -2,8 +2,14 @@
 
 set -euo pipefail
 
-echo "==> formatting..."
-go fmt ./...
+echo "==> Checking Go formatting..."
+unformatted=$(gofmt -l .)
+
+if [[ -n "$unformatted" ]]; then
+    echo "The following files need formatting:"
+    echo "$unformatted"
+    exit 1
+fi
 
 echo "==> Verifying dependencies..."
 go mod verify
@@ -18,3 +24,6 @@ echo "==> Building Shrinkr..."
 go build -v ./...
 
 echo "==> All checks passed!"
+
+echo "==> Starting Shrinkr..."
+go run ./cmd/shrinkr

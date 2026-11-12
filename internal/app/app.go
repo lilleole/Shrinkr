@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,11 +11,11 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/lilleole/shrinkr/internal/middleware"
 
 	"github.com/lilleole/shrinkr/internal/config"
 	"github.com/lilleole/shrinkr/internal/database"
 	"github.com/lilleole/shrinkr/internal/handlers"
+	"github.com/lilleole/shrinkr/internal/middleware"
 	"github.com/lilleole/shrinkr/internal/services"
 )
 
@@ -39,7 +40,6 @@ func Run(ctx context.Context) error {
 
 	// Configure HTTP router.
 	router := chi.NewRouter()
-
 	middleware.Register(router)
 
 	// Health endpoint.
@@ -62,13 +62,7 @@ func Run(ctx context.Context) error {
 		})
 	})
 
-	// Root endpoint.
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		_, _ = w.Write([]byte("Shrinkr is running!"))
-	})
-
-	// Register API and redirect routes.
+	// Register the dashboard, management API and redirect routes.
 	handlers.RegisterRoutes(router, linkService, cfg.BaseURL)
 
 	// Configure HTTP server.
@@ -110,3 +104,6 @@ func Run(ctx context.Context) error {
 		return nil
 	}
 }
+
+// Keep database/sql imported in this package's public startup signature context.
+var _ *sql.DB

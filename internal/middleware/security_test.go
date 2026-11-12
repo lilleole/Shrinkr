@@ -22,7 +22,7 @@ func TestSecurityHeaders(t *testing.T) {
 		"X-Frame-Options":         "DENY",
 		"Referrer-Policy":         "strict-origin-when-cross-origin",
 		"Permissions-Policy":      "camera=(), microphone=(), geolocation=()",
-		"Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+		"Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 	}
 
 	for header, value := range expected {
