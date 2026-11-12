@@ -1,0 +1,15 @@
+
+services:
+  shrinkr:
+    build: .
+    container_name: shrinkr
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - shrinkr-data:/data
+    environment:
+      DATABASE_PATH: /data/shrinkr.db
+
+volumes:
+  shrinkr-data:
