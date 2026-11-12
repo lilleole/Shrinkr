@@ -1,0 +1,11 @@
+
+CREATE TABLE IF NOT EXISTS links (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    code        TEXT NOT NULL UNIQUE,
+    target_url  TEXT NOT NULL,
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at  DATETIME,
+    clicks      INTEGER NOT NULL DEFAULT 0,
+    active      BOOLEAN NOT NULL DEFAULT TRUE
+);
+
